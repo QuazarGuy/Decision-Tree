@@ -43,8 +43,11 @@ public class Client {
 		
 //		entropyAttributes(data.getData(), 7, 15);
 		
-		train(trainingSet);
-//		test(testSet);
+		train(data.getData());
+		for (int i = 0; i < 100; i++) {
+			Boolean result = test(root, testSet[i]);
+			System.out.println(result);
+		}
 		
 //		printTree(root);
 		
@@ -62,8 +65,13 @@ public class Client {
 		}
 	}
 
-	static void test(int[][] testSet) {
-		
+	static Boolean test(Node decisionTree, int[] testCase) {
+		Node current = decisionTree;
+		while (current.getChildren().size() > 1) {
+			int attribute = current.getAttribute();
+			current = current.getChildren().get(testCase[attribute]);
+		}
+		return current.getChildren().get(0).getResult();
 	}
 
 	static void train(int[][] trainingSet) throws InterruptedException {
