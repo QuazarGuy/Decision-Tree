@@ -9,6 +9,8 @@ public class Client {
 
 //	                       {0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5}
 	static int options[] = {4,4,5,6,3,5,5,4,4,3,3,3,4,4,2,2};
+	static String labels[] = {"checking-balance", "months-loan-duration", "credit-history", "purpose", "amount", "savings-balance", "employment-duration", "percent-of-income", "years-at-residence", "age", "other-credit", "housing", "existing-loans-count", "job", "dependents", "default"};
+
 	static Node root = new Node(15, 0, null);
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -71,7 +73,7 @@ public class Client {
 	}
 	
 	static Node train(Node root, int[][] trainingSet, int targetAttribute, List<Boolean> traversedAttributes) throws InterruptedException {
-		System.out.print("[" + root.getAttribute() + "-" + root.getCategory() + " ");
+		System.out.print("[" + labels[root.getAttribute()] + "_" + root.getCategory() + " ");
 		int examples = trainingSet.length;
 		int positives = 0;
 		for (int i = 0; i < examples; i++) {
