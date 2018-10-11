@@ -17,40 +17,51 @@ public class Client {
 		Data data = new Data(new File("credit.csv"));
 		
 		Boolean testSelection[] = new Boolean[1000];
-		for (int i = 0; i < 1000; i++) {testSelection[i] = false;}
-		randomSelection(testSelection, 100, 1000);
-		
 		int[][] trainingSet = new int[900][16];
 		int[][] testSet = new int[100][16];
-		
-		int j=0, k=0;
-		for (int i = 0; i < 1000; i++) {
-			if (testSelection[i]) {
-				testSet[j] = data.getData()[i];
-				j++;
-			} else {
-				trainingSet[k] = data.getData()[i];
-				k++;
-			}
-		}
+		double averageAccuracy = 0.0;
 
-// 1st level gains
-//		
-//		for (int i = 0; i < 15; i++) {
-//			double gain = gain(data.getData(), i, 15);
-//			System.out.println(i + " " + gain);
-//		}
-		
-//		entropyAttributes(data.getData(), 7, 15);
-		
-		train(data.getData());
-		for (int i = 0; i < 100; i++) {
-			Boolean result = test(root, testSet[i]);
-			System.out.println(result);
+
+		for (int repeat = 0; repeat < 30; repeat++) {
+			
+			for (int i = 0; i < 1000; i++) {testSelection[i] = false;}
+			randomSelection(testSelection, 100, 1000);
+			
+			int j=0, k=0;
+			for (int i = 0; i < 1000; i++) {
+				if (testSelection[i]) {
+					testSet[j] = data.getData()[i];
+					j++;
+				} else {
+					trainingSet[k] = data.getData()[i];
+					k++;
+				}
+			}
+	
+	// 1st level gains
+	//		
+	//		for (int i = 0; i < 15; i++) {
+	//			double gain = gain(data.getData(), i, 15);
+	//			System.out.println(i + " " + gain);
+	//		}
+			
+	//		entropyAttributes(data.getData(), 7, 15);
+			
+			train(trainingSet);
+			double hit = 0.0;
+			for (int i = 0; i < 100; i++) {
+				Boolean result = test(root, testSet[i]);
+				if ((result == false && testSet[i][15] == 0) || (result == true && testSet[i][15] == 1)) {hit++;}
+	//			System.out.println(result + " : " + testSet[i][15]);
+			}
+//			System.out.println(hit + "%");
+			averageAccuracy += hit;
+			
+	//		printTree(root);
+
+			
 		}
-		
-//		printTree(root);
-		
+		System.out.println(averageAccuracy/30 + "%");
 	}
 	
 	static void printTree(Node root) {
@@ -68,7 +79,7 @@ public class Client {
 	static Boolean test(Node decisionTree, int[] testCase) {
 		Node current = decisionTree;
 		while (current.getChildren().size() > 1) {
-			int attribute = current.getAttribute();
+			int attribute = current.getChildren().get(0).getAttribute();
 			current = current.getChildren().get(testCase[attribute]);
 		}
 		return current.getChildren().get(0).getResult();
@@ -81,7 +92,7 @@ public class Client {
 	}
 	
 	static Node train(Node root, int[][] trainingSet, int targetAttribute, List<Boolean> traversedAttributes) throws InterruptedException {
-		System.out.print("[" + labels[root.getAttribute()] + "_" + root.getCategory() + " ");
+//		System.out.print("[" + labels[root.getAttribute()] + "_" + root.getCategory() + " ");
 		int examples = trainingSet.length;
 		int positives = 0;
 		for (int i = 0; i < examples; i++) {
@@ -90,20 +101,20 @@ public class Client {
 		}
 		if (positives == examples || (examples == 2 && positives == 1)) {
 			root.addNode(null, null, true);
-			System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
+//			System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
 			return root;
 		} else if (positives == 0) {
 			root.addNode(null, null, false);
-			System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
+//			System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
 			return root;
-		} else if (!traversedAttributes.contains(false)) {
+		} else if (!traversedAttributes.contains(false) || examples < 60) {
 			if (positives > examples) {
 				root.addNode(null, null, true);
-				System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
+//				System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
 				return root;
 			} else {
 				root.addNode(null, null, false);
-				System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
+//				System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
 				return root;
 			}
 		} else {
@@ -122,17 +133,17 @@ public class Client {
 				}
 			}
 //			System.out.println(anteMaxEntropy + " " + maxEntropy + " " + (anteMaxEntropy / maxEntropy));
-			if (anteMaxEntropy > 0.0 && (anteMaxEntropy / maxEntropy) <= 0.75) {
-				if (positives > examples) {
-					root.addNode(null, null, true);
-					System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
-					return root;
-				} else {
-					root.addNode(null, null, false);
-					System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
-					return root;
-				}
-			}
+//			if (anteMaxEntropy > 0.0 && (anteMaxEntropy / maxEntropy) <= 0.0125) {
+//				if (positives > examples) {
+//					root.addNode(null, null, true);
+//					System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
+//					return root;
+//				} else {
+//					root.addNode(null, null, false);
+//					System.out.println("[" + root.getChildren().get(0).getResult() + "]]");
+//					return root;
+//				}
+//			}
 //			if (root.getAttribute() == 0) {
 //				System.out.println("here?");
 //			}
@@ -144,7 +155,7 @@ public class Client {
 				root.addNode(train(new Node(indexMax, i, null), subset, indexMax, traversedAttributes));
 			}
 			traversedAttributes.set(indexMax, false);
-			System.out.println("]");
+//			System.out.println("]");
 			return root;
 		}
 	}
